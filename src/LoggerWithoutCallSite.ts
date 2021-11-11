@@ -1,6 +1,6 @@
 import { hostname } from "os";
 import { normalize as fileNormalize } from "path";
-import { inspect, format } from "util";
+import { inspect } from "util";
 
 import {
   IErrorObject,
@@ -95,6 +95,7 @@ export class LoggerWithoutCallSite {
         colors: false,
         compact: true,
         depth: Infinity,
+        breakLength: Infinity,
       },
       delimiter: " ",
       dateTimePattern: undefined,
@@ -670,7 +671,10 @@ export class LoggerWithoutCallSite {
       } else {
         std.write(
           typeStr +
-            this._formatAndHideSensitive(argument) +
+            this._formatAndHideSensitive(
+              argument,
+              this.settings.prettyInspectOptions
+            ) +
             this.settings.delimiter
         );
       }
@@ -704,7 +708,8 @@ export class LoggerWithoutCallSite {
         ) +
         (errorObject.message != null
           ? `${this.settings.delimiter}${this._formatAndHideSensitive(
-              errorObject.message
+              errorObject.message,
+              this.settings.prettyInspectOptions
             )}`
           : "")
     );
@@ -726,7 +731,7 @@ export class LoggerWithoutCallSite {
       );
     }
 
-    if (printStackTrace === true && errorObject?.stack?.length > 0) {
+    if (printStackTrace && errorObject?.stack?.length > 0) {
       std.write(
         LoggerHelper.styleString(
           ["underline", "bold"],
@@ -870,7 +875,8 @@ export class LoggerWithoutCallSite {
               ...errorObject,
               nativeError: undefined,
               errorString: this._formatAndHideSensitive(
-                errorObject.nativeError
+                errorObject.nativeError,
+                this.settings.jsonInspectOptions
               ),
             } as IErrorObjectStringifiable;
           } else if (typeof argument === "object") {
@@ -879,7 +885,10 @@ export class LoggerWithoutCallSite {
               this.settings.jsonInspectOptions
             );
           } else {
-            return this._formatAndHideSensitive(argument);
+            return this._formatAndHideSensitive(
+              argument,
+              this.settings.jsonInspectOptions
+            );
           }
         }
       ),
@@ -907,9 +916,9 @@ export class LoggerWithoutCallSite {
 
   private _formatAndHideSensitive(
     formatParam: unknown,
-    ...param: unknown[]
+    options: InspectOptions
   ): string {
-    return this._maskAny(format(formatParam, ...param));
+    return this._maskAny(inspect(formatParam, options));
   }
 
   private _maskValuesOfKeys<T>(object: T): T {
