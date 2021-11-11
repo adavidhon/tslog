@@ -1,6 +1,6 @@
 import { hostname } from "os";
 import { normalize as fileNormalize } from "path";
-import { inspect, format } from "util";
+import { inspect, format, formatWithOptions } from "util";
 
 import {
   IErrorObject,
@@ -670,7 +670,10 @@ export class LoggerWithoutCallSite {
       } else {
         std.write(
           typeStr +
-            this._formatAndHideSensitive(argument) +
+            this._formatAndHideSensitive(
+              argument,
+              this.settings.prettyInspectOptions
+            ) +
             this.settings.delimiter
         );
       }
@@ -704,7 +707,8 @@ export class LoggerWithoutCallSite {
         ) +
         (errorObject.message != null
           ? `${this.settings.delimiter}${this._formatAndHideSensitive(
-              errorObject.message
+              errorObject.message,
+              this.settings.prettyInspectOptions
             )}`
           : "")
     );
@@ -870,7 +874,8 @@ export class LoggerWithoutCallSite {
               ...errorObject,
               nativeError: undefined,
               errorString: this._formatAndHideSensitive(
-                errorObject.nativeError
+                errorObject.nativeError,
+                this.settings.jsonInspectOptions
               ),
             } as IErrorObjectStringifiable;
           } else if (typeof argument === "object") {
@@ -879,7 +884,10 @@ export class LoggerWithoutCallSite {
               this.settings.jsonInspectOptions
             );
           } else {
-            return this._formatAndHideSensitive(argument);
+            return this._formatAndHideSensitive(
+              argument,
+              this.settings.jsonInspectOptions
+            );
           }
         }
       ),
@@ -907,9 +915,10 @@ export class LoggerWithoutCallSite {
 
   private _formatAndHideSensitive(
     formatParam: unknown,
+    options: InspectOptions,
     ...param: unknown[]
   ): string {
-    return this._maskAny(format(formatParam, ...param));
+    return this._maskAny(formatWithOptions(options, formatParam, ...param));
   }
 
   private _maskValuesOfKeys<T>(object: T): T {
