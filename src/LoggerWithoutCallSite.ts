@@ -95,6 +95,7 @@ export class LoggerWithoutCallSite {
         colors: false,
         compact: true,
         depth: Infinity,
+        breakLength: Infinity,
       },
       delimiter: " ",
       dateTimePattern: undefined,
