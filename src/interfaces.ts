@@ -296,7 +296,7 @@ export interface IErrorObject {
  */
 export interface IErrorObjectStringifiable extends IErrorObject {
   nativeError: never;
-  errorString: string;
+  // errorString: string;
 }
 
 /**

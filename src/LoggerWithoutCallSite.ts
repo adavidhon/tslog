@@ -874,10 +874,6 @@ export class LoggerWithoutCallSite {
             return {
               ...errorObject,
               nativeError: undefined,
-              errorString: this._formatAndHideSensitive(
-                errorObject.nativeError,
-                this.settings.jsonInspectOptions
-              ),
             } as IErrorObjectStringifiable;
           } else if (typeof argument === "object") {
             return this._inspectAndHideSensitive(
